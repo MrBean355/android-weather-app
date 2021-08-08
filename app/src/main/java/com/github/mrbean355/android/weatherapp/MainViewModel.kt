@@ -2,32 +2,16 @@ package com.github.mrbean355.android.weatherapp
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.location.Location
-import android.os.Looper
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
-import com.google.android.gms.location.*
+import com.github.mrbean355.android.weatherapp.service.WeatherRepository
+import com.github.mrbean355.android.weatherapp.service.dto.WeatherResponse
+import kotlinx.coroutines.flow.Flow
 
 @SuppressLint("MissingPermission")
 class MainViewModel(application: Application) : AndroidViewModel(application) {
-    private var lastLocation: Location? = null
+    private val repo = WeatherRepository()
 
-    fun onPermissionGranted() {
-        val application: Application = getApplication()
-        val client = LocationServices.getFusedLocationProviderClient(application)
-        val request = LocationRequest.create()
-            .setInterval(10_000)
-            .setFastestInterval(5_000)
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setSmallestDisplacement(170f)
+    val weather: Flow<WeatherResponse?> = repo.currentLocationWeather(getApplication() as Context)
 
-        client.requestLocationUpdates(request, object : LocationCallback() {
-
-            override fun onLocationResult(result: LocationResult) {
-                lastLocation = result.lastLocation
-            }
-
-            override fun onLocationAvailability(availability: LocationAvailability) = Unit
-
-        }, Looper.getMainLooper())
-    }
 }
