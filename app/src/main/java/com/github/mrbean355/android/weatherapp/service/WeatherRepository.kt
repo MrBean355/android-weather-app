@@ -15,9 +15,11 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class WeatherRepository {
-    private val service = OpenWeatherService()
+class WeatherRepository @Inject constructor(
+    private val service: OpenWeatherService
+) {
 
     @RequiresPermission(ACCESS_FINE_LOCATION)
     fun currentLocationWeather(context: Context): Flow<WeatherResponse?> {

@@ -23,7 +23,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.github.mrbean355.android.weatherapp.service.dto.WeatherResponse
 import com.github.mrbean355.android.weatherapp.ui.theme.WeatherAppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
     private val requestPermission = registerForActivityResult(RequestPermission()) {
