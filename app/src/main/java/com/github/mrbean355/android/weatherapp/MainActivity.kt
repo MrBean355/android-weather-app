@@ -6,12 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.activity.viewModels
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,9 +19,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.github.mrbean355.android.weatherapp.service.dto.WeatherResponse
+import com.github.mrbean355.android.weatherapp.ui.theme.CloudyBlue
+import com.github.mrbean355.android.weatherapp.ui.theme.RainyGrey
+import com.github.mrbean355.android.weatherapp.ui.theme.SunnyGreen
 import com.github.mrbean355.android.weatherapp.ui.theme.WeatherAppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -43,7 +48,7 @@ class MainActivity : ComponentActivity() {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color(0xFF47AB2F))
+                            .background(weather?.backgroundColour() ?: Color.White)
                     )
                 }
                 requestPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -61,18 +66,38 @@ fun WeatherSummary(weather: WeatherResponse) {
             modifier = Modifier.fillMaxWidth(),
             contentScale = ContentScale.FillWidth,
         )
-        Column(Modifier.align(Alignment.Center)) {
-            Text(text = weather.main.temp.toString())
-            Text(text = weather.name)
+        Column(
+            Modifier
+                .padding(top = 48.dp)
+                .align(Alignment.TopCenter),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = stringResource(R.string.temperature_degrees, weather.formattedTemperature()), fontSize = 48.sp, color = Color.White)
+            Text(text = weather.weather.first().main, fontSize = 28.sp, color = Color.White)
+            Text(text = weather.name, fontSize = 18.sp, color = Color.White)
         }
     }
 }
 
+private fun WeatherResponse.formattedTemperature(): String {
+    return main.temp.roundToInt().toString()
+}
+
+@DrawableRes
 private fun WeatherResponse.background(): Int {
     val conditions = weather.first().main
     return when {
         conditions.contains("cloud", ignoreCase = true) -> R.drawable.forest_cloudy
         conditions.contains("rain", ignoreCase = true) -> R.drawable.forest_rainy
         else -> R.drawable.forest_sunny
+    }
+}
+
+private fun WeatherResponse.backgroundColour(): Color {
+    val conditions = weather.first().main
+    return when {
+        conditions.contains("cloud", ignoreCase = true) -> CloudyBlue
+        conditions.contains("rain", ignoreCase = true) -> RainyGrey
+        else -> SunnyGreen
     }
 }
