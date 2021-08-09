@@ -10,6 +10,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -44,7 +45,11 @@ class MainActivity : ComponentActivity() {
                 val weather by viewModel.weather.collectAsState(null)
 
                 Column(Modifier.fillMaxSize()) {
-                    weather?.let { WeatherSummary(weather = it) }
+                    weather?.let {
+                        WeatherSummary(weather = it)
+                        TemperatureSummary(it)
+                        Divider()
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -72,15 +77,52 @@ fun WeatherSummary(weather: WeatherResponse) {
                 .align(Alignment.TopCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = stringResource(R.string.temperature_degrees, weather.formattedTemperature()), fontSize = 48.sp, color = Color.White)
+            Text(text = formatTemperature(weather.main.temp), fontSize = 48.sp, color = Color.White)
             Text(text = weather.weather.first().main, fontSize = 28.sp, color = Color.White)
             Text(text = weather.name, fontSize = 18.sp, color = Color.White)
         }
     }
 }
 
-private fun WeatherResponse.formattedTemperature(): String {
-    return main.temp.roundToInt().toString()
+@Composable
+fun TemperatureSummary(weather: WeatherResponse) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(weather.backgroundColour())
+            .padding(horizontal = 32.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = formatTemperature(weather.main.tempMin),
+                fontSize = 20.sp,
+                color = Color.White
+            )
+            Text(text = stringResource(R.string.min_temperature), color = Color.White)
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = formatTemperature(weather.main.temp),
+                fontSize = 20.sp,
+                color = Color.White
+            )
+            Text(text = stringResource(R.string.now_temperature), color = Color.White)
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = formatTemperature(weather.main.tempMax),
+                fontSize = 20.sp,
+                color = Color.White
+            )
+            Text(text = stringResource(R.string.max_temperature), color = Color.White)
+        }
+    }
+}
+
+@Composable
+private fun formatTemperature(temperature: Double): String {
+    return stringResource(R.string.temperature_degrees, temperature.roundToInt())
 }
 
 @DrawableRes

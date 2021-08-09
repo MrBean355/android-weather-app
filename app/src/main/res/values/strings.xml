@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Weather App</string>
-    <string name="temperature_degrees">%s°</string>
+    <string name="temperature_degrees">%d°</string>
+    <string name="min_temperature">Min</string>
+    <string name="now_temperature">Current</string>
+    <string name="max_temperature">Max</string>
 </resources>
