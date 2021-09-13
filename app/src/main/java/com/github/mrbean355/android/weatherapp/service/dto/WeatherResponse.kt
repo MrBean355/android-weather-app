@@ -13,7 +13,7 @@ data class WeatherResponse(
     @SerializedName("coord")
     val coord: Coord,
     @SerializedName("dt")
-    val dt: Int,
+    val dt: Long,
     @SerializedName("id")
     val id: Int,
     @SerializedName("main")
