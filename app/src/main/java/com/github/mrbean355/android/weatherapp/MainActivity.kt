@@ -4,7 +4,6 @@ import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -38,6 +37,9 @@ import com.github.mrbean355.android.weatherapp.ui.theme.CloudyBlue
 import com.github.mrbean355.android.weatherapp.ui.theme.RainyGrey
 import com.github.mrbean355.android.weatherapp.ui.theme.SunnyGreen
 import com.github.mrbean355.android.weatherapp.ui.theme.WeatherAppTheme
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionRequired
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
@@ -45,41 +47,51 @@ import java.util.Date
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
+@ExperimentalPermissionsApi
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
-    private val requestPermission = registerForActivityResult(RequestPermission()) {
-        // TODO: fetch current location if granted
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             WeatherAppTheme {
-                val weather by viewModel.weather.collectAsState(null)
-                val forecast by viewModel.forecast.collectAsState(emptyList())
-                weather?.let {
-                    rememberSystemUiController().setStatusBarColor(it.backgroundColour())
-                }
+                val permission = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
 
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .background(weather?.backgroundColour() ?: Color.White)
+                PermissionRequired(
+                    permissionState = permission,
+                    permissionNotGrantedContent = { LocationPermissionDetails(onContinueClick = permission::launchPermissionRequest) },
+                    permissionNotAvailableContent = { LocationPermissionNotAvailable() }
                 ) {
-                    weather?.let {
-                        WeatherSummary(weather = it)
-                        TemperatureSummary(it)
-                        Divider(color = Color.White)
-                    }
-                    FiveDayForecast(forecast)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                    )
+                    MainScreen(viewModel)
                 }
-                requestPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
+    }
+}
+
+@Composable
+fun MainScreen(viewModel: MainViewModel) {
+    val weather by viewModel.weather.collectAsState(null)
+    val forecast by viewModel.forecast.collectAsState(emptyList())
+    weather?.let {
+        rememberSystemUiController().setStatusBarColor(it.backgroundColour())
+    }
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(weather?.backgroundColour() ?: Color.White)
+    ) {
+        weather?.let {
+            WeatherSummary(weather = it)
+            TemperatureSummary(it)
+            Divider(color = Color.White)
+        }
+        FiveDayForecast(forecast)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        )
     }
 }
 
