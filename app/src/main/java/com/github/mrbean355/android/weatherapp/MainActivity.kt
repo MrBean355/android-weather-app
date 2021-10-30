@@ -31,8 +31,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.github.mrbean355.android.weatherapp.service.dto.Forecast
-import com.github.mrbean355.android.weatherapp.service.dto.WeatherResponse
+import com.github.mrbean355.android.weatherapp.service.dto.CurrentWeather
+import com.github.mrbean355.android.weatherapp.service.dto.FullWeather
 import com.github.mrbean355.android.weatherapp.ui.theme.CloudyBlue
 import com.github.mrbean355.android.weatherapp.ui.theme.RainyGrey
 import com.github.mrbean355.android.weatherapp.ui.theme.SunnyGreen
@@ -71,18 +71,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
-    val weather by viewModel.weather.collectAsState(null)
+    val current by viewModel.current.collectAsState(null)
     val forecast by viewModel.forecast.collectAsState(emptyList())
-    weather?.let {
+    current?.let {
         rememberSystemUiController().setStatusBarColor(it.backgroundColour())
     }
 
     Column(
         Modifier
             .fillMaxSize()
-            .background(weather?.backgroundColour() ?: Color.White)
+            .background(current?.backgroundColour() ?: Color.White)
     ) {
-        weather?.let {
+        current?.let {
             WeatherSummary(weather = it)
             TemperatureSummary(it)
             Divider(color = Color.White)
@@ -96,7 +96,7 @@ fun MainScreen(viewModel: MainViewModel) {
 }
 
 @Composable
-fun WeatherSummary(weather: WeatherResponse) {
+fun WeatherSummary(weather: CurrentWeather) {
     Box {
         Image(
             painter = painterResource(id = weather.background()),
@@ -118,7 +118,7 @@ fun WeatherSummary(weather: WeatherResponse) {
 }
 
 @Composable
-fun TemperatureSummary(weather: WeatherResponse) {
+fun TemperatureSummary(weather: CurrentWeather) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -153,7 +153,7 @@ fun TemperatureSummary(weather: WeatherResponse) {
 }
 
 @Composable
-fun FiveDayForecast(forecast: List<Forecast>) {
+fun FiveDayForecast(forecast: List<FullWeather.Daily>) {
     LazyColumn {
         items(forecast) { dayForecast ->
             Box(
@@ -174,7 +174,7 @@ fun FiveDayForecast(forecast: List<Forecast>) {
                         .align(Alignment.Center)
                 )
                 Text(
-                    text = formatTemperature(dayForecast.main.temp),
+                    text = formatTemperature(dayForecast.temp.day),
                     color = Color.White,
                     modifier = Modifier.align(Alignment.CenterEnd)
                 )
@@ -189,7 +189,7 @@ private fun formatTemperature(temperature: Double): String {
 }
 
 @DrawableRes
-private fun WeatherResponse.background(): Int {
+private fun CurrentWeather.background(): Int {
     val conditions = weather.first().main
     return when {
         conditions.contains("cloud", ignoreCase = true) -> R.drawable.forest_cloudy
@@ -198,7 +198,7 @@ private fun WeatherResponse.background(): Int {
     }
 }
 
-private fun WeatherResponse.backgroundColour(): Color {
+private fun CurrentWeather.backgroundColour(): Color {
     val conditions = weather.first().main
     return when {
         conditions.contains("cloud", ignoreCase = true) -> CloudyBlue
@@ -207,7 +207,7 @@ private fun WeatherResponse.backgroundColour(): Color {
     }
 }
 
-private fun Forecast.forecastIcon(): Int {
+private fun FullWeather.Daily.forecastIcon(): Int {
     val conditions = weather.first().main
     return when {
         conditions.contains("cloud", ignoreCase = true) -> R.drawable.partlysunny

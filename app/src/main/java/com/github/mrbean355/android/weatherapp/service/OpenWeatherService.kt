@@ -1,7 +1,7 @@
 package com.github.mrbean355.android.weatherapp.service
 
-import com.github.mrbean355.android.weatherapp.service.dto.ForecastResponse
-import com.github.mrbean355.android.weatherapp.service.dto.WeatherResponse
+import com.github.mrbean355.android.weatherapp.service.dto.CurrentWeather
+import com.github.mrbean355.android.weatherapp.service.dto.FullWeather
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -13,12 +13,12 @@ interface OpenWeatherService {
         @Query("lat") lat: Double,
         @Query("lon") long: Double,
         @Query("appid") appid: String,
-    ): Response<WeatherResponse>
+    ): Response<CurrentWeather>
 
-    @GET("forecast?units=metric")
-    suspend fun getWeatherForecast(
+    @GET("onecall?units=metric&exclude=current,minutely,hourly,alerts")
+    suspend fun getFullWeather(
         @Query("lat") lat: Double,
         @Query("lon") long: Double,
         @Query("appid") appid: String,
-    ): Response<ForecastResponse>
+    ): Response<FullWeather>
 }

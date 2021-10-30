@@ -6,9 +6,8 @@ import android.location.Location
 import android.os.Looper
 import androidx.annotation.RequiresPermission
 import com.github.mrbean355.android.weatherapp.BuildConfig
-import com.github.mrbean355.android.weatherapp.service.dto.Forecast
-import com.github.mrbean355.android.weatherapp.service.dto.ForecastResponse
-import com.github.mrbean355.android.weatherapp.service.dto.WeatherResponse
+import com.github.mrbean355.android.weatherapp.service.dto.CurrentWeather
+import com.github.mrbean355.android.weatherapp.service.dto.FullWeather
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -18,8 +17,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import java.util.Calendar
-import java.util.Date
 import javax.inject.Inject
 
 class WeatherRepository @Inject constructor(
@@ -28,21 +25,21 @@ class WeatherRepository @Inject constructor(
 ) {
 
     @RequiresPermission(ACCESS_FINE_LOCATION)
-    fun currentLocationWeather(): Flow<WeatherResponse?> {
+    fun getCurrentWeather(): Flow<CurrentWeather> {
         return locationFlow().map {
             service.getCurrentWeather(it.latitude, it.longitude, BuildConfig.API_KEY)
                 .body()
-        }
+        }.filterNotNull()
     }
 
     @RequiresPermission(ACCESS_FINE_LOCATION)
-    fun weatherForecast(): Flow<List<Forecast>> {
+    fun getFiveDayForecast(): Flow<List<FullWeather.Daily>> {
         return locationFlow().map {
-            service.getWeatherForecast(it.latitude, it.longitude, BuildConfig.API_KEY)
+            service.getFullWeather(it.latitude, it.longitude, BuildConfig.API_KEY)
                 .body()
-        }.filterNotNull().map {
-            extractDailyForecast(it)
-        }
+        }.map {
+            it?.daily?.drop(1)?.take(5)
+        }.filterNotNull()
     }
 
     @RequiresPermission(ACCESS_FINE_LOCATION)
@@ -63,28 +60,6 @@ class WeatherRepository @Inject constructor(
 
         awaitClose {
             client.removeLocationUpdates(callback)
-        }
-    }
-
-    private fun extractDailyForecast(response: ForecastResponse): List<Forecast> {
-        val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-        val future = response.list.filter {
-            val cal = Calendar.getInstance().apply {
-                time = Date(it.dt * 1_000)
-            }
-            cal.get(Calendar.DAY_OF_MONTH) > today
-        }
-
-        val dailyForecast = future.groupBy {
-            Calendar.getInstance().apply {
-                time = Date(it.dt * 1_000)
-            }.get(Calendar.DAY_OF_MONTH)
-        }
-
-        return dailyForecast.mapValues { (_, forecast) ->
-            forecast.getOrNull(4)
-        }.mapNotNull { (_, forecast) ->
-            forecast
         }
     }
 }
