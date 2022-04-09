@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.mrbean355.android.weatherapp.ui.theme.RainyGrey
+import com.github.mrbean355.android.weatherapp.ui.theme.SecondaryButton
 import com.github.mrbean355.android.weatherapp.ui.theme.SunnyGreen
 
 @Composable
@@ -55,7 +56,7 @@ fun LocationPermissionDetails(onContinueClick: () -> Unit) {
 }
 
 @Composable
-fun LocationPermissionNotAvailable() {
+fun LocationPermissionNotAvailable(onContinueClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -76,6 +77,12 @@ fun LocationPermissionNotAvailable() {
             fontSize = 18.sp,
             color = Color.White
         )
+        Button(
+            onClick = onContinueClick,
+            colors = SecondaryButton
+        ) {
+            Text(text = stringResource(id = R.string.location_permission_continue))
+        }
         Spacer(modifier = Modifier.weight(1f))
     }
 }

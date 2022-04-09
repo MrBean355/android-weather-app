@@ -38,7 +38,7 @@ import com.github.mrbean355.android.weatherapp.ui.theme.RainyGrey
 import com.github.mrbean355.android.weatherapp.ui.theme.SunnyGreen
 import com.github.mrbean355.android.weatherapp.ui.theme.WeatherAppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionRequired
+import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,14 +55,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             WeatherAppTheme {
-                val permission = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
+                val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
-                PermissionRequired(
-                    permissionState = permission,
-                    permissionNotGrantedContent = { LocationPermissionDetails(onContinueClick = permission::launchPermissionRequest) },
-                    permissionNotAvailableContent = { LocationPermissionNotAvailable() }
-                ) {
-                    MainScreen(viewModel)
+                when (val status = permissionState.status) {
+                    PermissionStatus.Granted -> MainScreen(viewModel)
+                    is PermissionStatus.Denied -> {
+                        if (status.shouldShowRationale) {
+                            LocationPermissionNotAvailable(onContinueClick = permissionState::launchPermissionRequest)
+                        } else {
+                            LocationPermissionDetails(onContinueClick = permissionState::launchPermissionRequest)
+                        }
+                    }
                 }
             }
         }
