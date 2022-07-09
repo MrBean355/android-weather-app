@@ -47,7 +47,7 @@ class WeatherRepository @Inject constructor(
         val client = LocationServices.getFusedLocationProviderClient(application)
         val callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
-                trySend(result.lastLocation)
+                result.lastLocation?.let { trySend(it) }
             }
         }
         val request = LocationRequest.create()
